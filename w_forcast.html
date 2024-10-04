@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <title>Weather Map</title>
+    <style>
+        #map { height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // สร้างแผนที่ที่แสดงใน div#map
+        var map = L.map('map').setView([52.52, 13.41], 10); // ตั้งพิกัดสำหรับเบอร์ลิน, เยอรมนี
+
+        // เพิ่มเลเยอร์แผนที่พื้นฐานจาก OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // ฟังก์ชันดึงข้อมูลจาก API Open-Meteo
+        async function getWeatherData() {
+            const url = "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m";
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            // ดึงข้อมูลที่ต้องการมาแสดง
+            const currentTemperature = data.current.temperature_2m;
+            const currentWindSpeed = data.current.wind_speed_10m;
+            
+            // สร้างป๊อปอัพที่จะแสดงข้อมูล
+            var popupContent = `
+                <strong>Current Weather</strong><br/>
+                Temperature: ${currentTemperature}°C<br/>
+                Wind Speed: ${currentWindSpeed} m/s
+            `;
+
+            // เพิ่มป๊อปอัพที่พิกัดเบอร์ลิน
+            L.marker([52.52, 13.41]).addTo(map)
+                .bindPopup(popupContent)
+                .openPopup();
+        }
+
+        // เรียกใช้ฟังก์ชันเพื่อดึงข้อมูลและแสดงบนแผนที่
+        getWeatherData();
+    </script>
+</body>
+</html>
